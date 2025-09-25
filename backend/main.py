@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 import uvicorn
 
 from app.core.config import settings
@@ -40,6 +41,10 @@ async def root():
 async def health_check():
     return {"status": "ok"}
 
+
+@app.get("/healthz", response_class=PlainTextResponse)
+async def healthz_check():
+    return "ok"
 
 if __name__ == "__main__":
     uvicorn.run(
