@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Literal
 from enum import Enum
 
 
@@ -32,3 +32,15 @@ class HowaResponse(BaseModel):
     sutra_quote: SutraQuote = Field(..., description="法話の根拠となる、経典からの引用")
     modern_example: str = Field(..., description="教えを現代のシーンで解説する、具体的な例え話")
     conclusion: str = Field(..., description="聴衆が持ち帰れる、物語の締めくくりと実践のヒント")
+    
+class InteractiveStepRequest(BaseModel):
+    """対話型APIのリクエスト"""
+    step: Literal["create_prompts", "run_news_search", "run_sutra_search"]
+    theme: str
+    context: Dict[str, Any] = {} # 前のステップからの情報を引き継ぐためのコンテキスト
+
+class InteractiveStepResponse(BaseModel):
+    """対話型APIのレスポンス"""
+    step: str
+    result: Dict[str, Any]
+    message: str

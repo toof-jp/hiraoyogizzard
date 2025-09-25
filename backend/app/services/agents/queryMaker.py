@@ -12,7 +12,7 @@ class QueryMaker:
     def __init__(self):
         try:
             # このエージェントも思考するためにモデルを持つ
-            genai.configure(api_key=settings.gemini_api_key)
+            #genai.configure(api_key=settings.gemini_api_key)
             self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
             logger.info("HobenAgent (Query Maker) initialized.")
         except Exception as e:
@@ -76,7 +76,7 @@ class QueryMaker:
         logger.debug(f"Created sutra search prompt for core theme: {core_theme}")
         return prompt
 
-    def create_current_topics_search_prompt(self, theme: str) -> str:
+    async def create_current_topics_search_prompt(self, theme: str) -> str:
         """
         与えられたテーマに基づき、遊行僧エージェントが時事ネタを検索するための
         プロンプトを生成する。（将来の拡張用）
@@ -84,7 +84,7 @@ class QueryMaker:
         # ここに時事ネタ検索用のプロンプト生成ロジックを追加できます
         pass
     
-async def create_current_topics_search_prompt(self, theme_input: str) -> str:
+    async def create_current_topics_search_prompt(self, theme_input: str) -> str:
         """
         与えられたテーマに基づき、遊行僧エージェント（News Researcher）が
         時事ネタを検索するためのプロンプトを生成する。
@@ -104,9 +104,10 @@ Google検索ツールを駆使して、以下のテーマに関連する最近�
 {core_theme}
 
 # 指示
-1.  テーマに直接関連する、興味深い、または示唆に富む出来事を2〜3つ探してください。
-2.  それぞれの出来事について、法話の導入や例え話に使いやすいように、1〜2文で簡潔に要約してください。
+1.  テーマに直接関連する、興味深い、または示唆に富む出来事を5つ探してください。
+2.  なるべく具体的に、企業名や個人名が含まれるニュースを選んでください。
 3.  ゴシップや扇情的な内容ではなく、多くの人が共感できるような普遍的な側面を持つニュースを選んでください。
+4.  ニュースは一年以内のものに限定してください。
 
 # 出力形式
 - 箇条書きのリスト形式で、調査結果のみを出力してください。説明や前置きは不要です。
