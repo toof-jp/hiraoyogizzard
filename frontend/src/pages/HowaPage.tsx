@@ -5,6 +5,7 @@ import { generateHowa } from "../api/client.js";
 import type { components } from "../api/generated.js";
 import { HowaForm } from "../components/HowaForm.tsx";
 import { LoadingSpinner } from "../components/LoadingSpinner.tsx";
+import { HowaFeedback } from "../components/HowaFeedback.tsx";
 
 type HowaResponse = components["schemas"]["HowaResponse"];
 
@@ -103,6 +104,7 @@ export function HowaPage() {
             </section>
           </article>
         )}
+        {howa && <HowaFeedback howaId={howa.title} />}
       </main>
     </div>
   );
