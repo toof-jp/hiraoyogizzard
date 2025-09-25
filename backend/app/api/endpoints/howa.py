@@ -20,7 +20,7 @@ async def generate_howa(request: GenerateHowaRequest):
     """
     try:
         # サービスを呼び出す
-        return await howa_service.generate_howa(request)
+        return await howa_service.execute_interactive_step("create_prompts", request.theme, {})
     except HTTPException as http_exc:
         # サービス層で発生したHTTPExceptionをそのまま再発生させる
         raise http_exc
