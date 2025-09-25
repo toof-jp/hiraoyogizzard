@@ -144,3 +144,85 @@ def test_generate_howa_invalid_request():
     }
     response = client.post("/v1/howa", json=request_data)
     assert response.status_code == 422
+
+
+def test_interactive_step_1_create_prompts():
+    """【対話テスト①】プロンプト生成ステップのテスト"""
+    request_data = {
+        "step": "create_prompts",
+        "theme": "人生における無常について",
+        "context": {}
+    }
+    response = client.post("/v1/howa/interactive-step", json=request_data)
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert data["step"] == "create_prompts"
+    assert "news_search_prompt" in data["result"]
+    assert "sutra_search_prompt" in data["result"]
+    assert "無常" in data["result"]["news_search_prompt"]
+
+
+def test_interactive_step_2_run_news_search():
+    """【対話テスト②】時事ネタ検索ステップを実行し、ニュース出力を確認する"""
+    # ステップ1: まず、検索用のプロンプトを生成させる
+    theme = "AIと人間の共存"
+    step1_request = {
+        "step": "create_prompts",
+        "theme": theme,
+        "context": {}
+    }
+    step1_response = client.post("/v1/howa/interactive-step", json=step1_request)
+
+    # --- ★ここから修正 ---
+    # もしステータスコードが200でなかった場合、エラーの詳細を出力してテストを失敗させる
+    if step1_response.status_code != 200:
+        print("\n--- サーバーからのエラーレスポンス ---")
+        try:
+            # レスポンスボディをJSONとしてパースして表示
+            error_details = step1_response.json()
+            print(error_details)
+        except Exception:
+            # JSONでパースできない場合は、テキストとして表示
+            print(step1_response.text)
+        print("------------------------------------")
+    
+    assert step1_response.status_code == 200
+    # --- ★ここまで修正 ---
+
+    step1_result = step1_response.json()["result"]
+    news_search_prompt = step1_result.get("news_search_prompt")
+    assert news_search_prompt is not None
+
+    # ステップ2: ステップ1で得たプロンプトを使って、ニュース検索を実行
+    step2_request = {
+        "step": "run_news_search",
+        "theme": theme,
+        "context": {
+            "news_search_prompt": news_search_prompt
+        }
+    }
+    response = client.post("/v1/howa/interactive-step", json=step2_request)
+    assert response.status_code == 200
+    data = response.json()
+
+    # --- 結果の検証 ---
+    assert data["step"] == "run_news_search"
+    assert "found_topics" in data["result"]
+    
+    found_topics = data["result"]["found_topics"]
+    assert isinstance(found_topics, list)
+    
+    # 検索結果が空でないことを期待する (APIが正常に動作すれば何かしら見つかるはず)
+    assert len(found_topics) > 0, "ニュース検索結果が空でした。APIまたはプロンプトを確認してください。"
+    
+    # 検索結果の各項目が文字列であることを確認
+    for topic in found_topics:
+        assert isinstance(topic, str)
+
+    # テスト実行時にコンソールに出力して目視確認する
+    print(f"\n--- News Search Test Results for theme '{theme}' ---")
+    for i, topic in enumerate(found_topics):
+        print(f"{i+1}: {topic}")
+    print("--------------------------------------------------")
+
