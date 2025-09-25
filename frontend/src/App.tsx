@@ -2,6 +2,8 @@ import { useState } from "react";
 import "./App.css";
 import { generateHowa } from "./api/client.js";
 import type { components } from "./api/generated.js";
+import { HowaForm } from "./components/HowaForm.tsx";
+import { LoadingSpinner } from "./components/LoadingSpinner.tsx";
 
 // HowaResponseの型をインポート
 type HowaResponse = components["schemas"]["HowaResponse"];
@@ -15,21 +17,26 @@ function App() {
   // 3. エラーが発生したときのメッセージ
   const [error, setError] = useState<string | null>(null);
 
-  // ボタンが押されたときに実行される関数
-  const handleSubmit = async () => {
+  // フォームが送信されたときに実行される関数
+  const handleSubmit = async (
+    theme: string,
+    audiences: ("子供" | "若者" | "ビジネスパーソン" | "高齢者" | "指定なし")[]
+  ) => {
     setIsLoading(true);
     setError(null);
     setHowa(null);
     try {
       const response = await generateHowa({
-        theme: "感謝",
-        audiences: ["若者"],
+        theme,
+        audiences,
       });
       if (response) {
         setHowa(response);
       }
     } catch (err) {
-      setError("法話の生成に失敗しました。");
+      setError(
+        "法話の生成に失敗しました。APIサーバーが起動していることを確認してください。"
+      );
       console.error(err); // コンソールにエラーの詳細を出力
     } finally {
       setIsLoading(false);
@@ -44,14 +51,24 @@ function App() {
       </header>
 
       <main>
-        {/* ここに将来的にフォームコンポーネントを配置 */}
-        <button onClick={handleSubmit} disabled={isLoading}>
-          {isLoading ? "生成中..." : "法話を生成する (モック)"}
-        </button>
+        <HowaForm onSubmit={handleSubmit} isLoading={isLoading} />
 
         {/* ローディング、エラー、成功時の表示を切り替える */}
-        {isLoading && <p>AIが執筆中です...</p>}
-        {error && <p className="error">{error}</p>}
+        {isLoading && <LoadingSpinner message="AIが法話を執筆中です..." />}
+        {error && (
+          <div
+            style={{
+              backgroundColor: "#fee",
+              border: "1px solid #fcc",
+              color: "#c33",
+              padding: "12px",
+              borderRadius: "4px",
+              marginBottom: "20px",
+            }}
+          >
+            <strong>エラー:</strong> {error}
+          </div>
+        )}
         {howa && (
           <article className="howa-card">
             <h2>{howa.title}</h2>
