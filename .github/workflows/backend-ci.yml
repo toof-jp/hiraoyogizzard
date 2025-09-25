@@ -50,8 +50,8 @@ jobs:
       - name: Build & Push
         uses: docker/build-push-action@v6
         with:
-          context: search/backend
-          file: search/backend/Dockerfile
+          context: backend
+          file: backend/Dockerfile
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
