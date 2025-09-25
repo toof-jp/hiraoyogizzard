@@ -1,16 +1,16 @@
 from typing import List, Dict, Any
+from fastapi import HTTPException
 import random
 import asyncio
-from ..models.howa import GenerateHowaRequest, HowaResponse
+from ..models.howa import GenerateHowaRequest, HowaResponse, SutraQuote
 from .gemini_service import GeminiService
 from .agents.queryMaker import QueryMaker
 from .agents.newsResearcher import NewsResearcher
-from .agents.sutraResearcher import SutraResearcher
 from .agents.writer import Writer
 from .agents.reviewer import Reviewer
-from .agents.kyotenFinder import KyotenFinder, KyotenSearchRequest, KyotenSearchResponse
-from fastapi import HTTPException
+from .agents.kyotenFinder import KyotenFinder, KyotenSearchRequest
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +22,9 @@ class HowaGenerationService:
         self.gemini_service = GeminiService()
         self.query_maker = QueryMaker()
         self.news_researcher = NewsResearcher()
-        #self.sutra_researcher = SutraResearcher()
-        self.kyoten_finder = KyotenFinder()
         self.writer = Writer()
         self.reviewer = Reviewer()
+        self.kyoten_finder = KyotenFinder()
         
     
     async def generate_howa(self, request: GenerateHowaRequest) -> HowaResponse:
@@ -43,76 +42,105 @@ class HowaGenerationService:
                 detail=f"法話の生成に失敗しました (外部サービスエラー): {str(e)}"
             )
     
-    async def execute_interactive_step(self, step: str, theme: str, context: Dict[str, Any]) -> Dict[str, Any]:
-        logger.info(f"Executing interactive step: {step} for theme: {theme}")
+    async def generate_full_howa(self, request: GenerateHowaRequest) -> HowaResponse:
+        """
+        一括生成リクエストを受け取り、経典検索から評価までの一連の処理を実行する。
+        """
+        theme = request.theme
+        audiences = request.audiences
+        context = {}
+        logger.info(f"Starting full howa generation for theme: '{theme}'")
+
+        # --- ステップを順番に実行 ---
+
+        # 1. プロンプト生成 (内部的に実行)
+        prompts_result = await self.execute_step("create_prompts", theme, audiences, context)
+        context.update(prompts_result)
+
+        # 2. 経典検索
+        sutra_result = await self.execute_step("run_sutra_search", theme, audiences, context)
+        context.update(sutra_result)
+
+        # 3. ニュース検索
+        news_result = await self.execute_step("run_news_search", theme, audiences, context)
+        context.update(news_result)
+
+        # 4. 法話執筆
+        write_result = await self.execute_step("write_howa", theme, audiences, context)
+        context["howa_candidates"] = write_result["final_howa"] # キー名を評価ステップ用に変更
+
+        # 5. 法話評価
+        eval_result = await self.execute_step("evaluate_howa", theme, audiences, context)
+        
+        # 最終的なレスポンスを組み立てる
+        # evaluate_and_selectは、パース済みの辞書(dict)を返す
+        final_howa_data = await self.execute_step("evaluate_howa", theme, audiences, context)
+        
+        # 最終的なレスポンスを組み立てる
+        try:
+            # 辞書をそのままHowaResponseモデルに渡す
+            return HowaResponse(**final_howa_data)
+        except Exception as e:
+            # モデルへの変換に失敗した場合 (キーが足りないなど)
+            logger.error(f"Failed to create HowaResponse from final data: {e}\nData was: {final_howa_data}")
+            # 安全なフォールバック
+            return HowaResponse(
+                title=theme,
+                introduction="最終的な法話の組み立てに失敗しました。",
+                problem_statement="",
+                sutra_quote=SutraQuote(text="", source=""),
+                modern_example="",
+                conclusion=""
+            )
+
+    async def execute_step(self, step: str, theme: str, audiences: List[str], context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        単一の対話ステップを実行する内部ヘルパーメソッド。
+        """
+        logger.debug(f"Executing step: '{step}'")
 
         if step == "create_prompts":
-            # このステップはシンプルに戻る。経典データは不要。
-            news_prompt = await self.query_maker.create_current_topics_search_prompt(theme)
-            sutra_prompt = await self.query_maker.create_sutra_search_prompt(theme)
-            return {
-                "news_search_prompt": news_prompt,
-                "sutra_search_prompt": sutra_prompt
-            }
+            news_search_prompt = await self.query_maker.create_current_topics_search_prompt(theme, audiences)
+            return {"news_search_prompt": news_search_prompt}
 
         elif step == "run_sutra_search":
-            # ステップ3: 蔵主エージェントが経典を検索する (将来の実装)
-            sutra_prompt = context.get("sutra_search_prompt")
-            if not sutra_prompt:
-                # 先にプロンプトを生成する必要があることを示唆するエラー
-                raise ValueError("Context must contain 'sutra_search_prompt'. Please run 'create_prompts' step first.")
-
-            search_request = KyotenSearchRequest(theme=sutra_prompt)
-            response: KyotenSearchResponse = await self.kyoten_finder.search_sutra_placeholder(search_request)
-            found_quote_dict = {
+            search_request = KyotenSearchRequest(theme=theme)
+            response = await self.kyoten_finder.search_sutra_placeholder(search_request)
+            return {"found_quote": {
                 "quote": response.sutra_text,
                 "source": response.source,
-                "explanation": response.context
-            }
-            return {"found_quote": found_quote_dict}
+                "interpretation": response.context
+            }}
 
         elif step == "run_news_search":
-            # ステップ2: 遊行僧エージェントが時事ネタを検索する
-            news_prompt = context.get("news_search_prompt")
-            if not news_prompt:
-                raise ValueError("Context must contain 'news_search_prompt'. Please run 'create_prompts' step first.")
-            
-            # コンテキストから経典データを取得（なくても良い）
+            prompt = context.get("news_search_prompt", "")
             sutra_data = context.get("found_quote")
-            
-            # 遊行僧エージェントに、基本プロンプトと経典データの両方を渡す
-            topics = await self.news_researcher.search_current_topics(news_prompt, sutra_data)
+            topics = await self.news_researcher.search_current_topics(prompt, sutra_data)
             return {"found_topics": topics}
+
         elif step == "write_howa":
             sutra_data = context.get("found_quote")
-            topics = context.get("found_topics")
-            
-            # --- ★デバッグ用のprint文を追加 ---
-            print(f"\n[DEBUG] 'write_howa' step received topics. Type: {type(topics)}, Content: {topics}\n")
-
+            topics = context.get("found_topics", [])
             if not sutra_data or not topics:
                 raise ValueError("Context must contain 'found_quote' and 'found_topics'.")
-
-            # 見つかった各トピックに対して、並行して法話を生成します
-            howa_tasks = []
-            for topic in topics:
-                # ★ writer.write_howa には、単一の文字列(topic)を渡します
-                task = self.writer.write_howa(theme, topic, sutra_data)
-                howa_tasks.append(task)
             
-            # 全ての法話執筆タスクが完了するのを待ちます
+            howa_tasks = [self.writer.write_howa(theme, topic, sutra_data,audiences) for topic in topics]
             howa_candidates = await asyncio.gather(*howa_tasks)
-            
-            # 生成された法話候補のリストを返します
             return {"final_howa": howa_candidates}
+
         elif step == "evaluate_howa":
-            # ステップ5: 評価エージェントが法話候補を評価し、最良のものを選ぶ
-            howa_candidates = context.get("howa_candidates")
+            howa_candidates = context.get("howa_candidates", [])
             if not howa_candidates:
-                raise ValueError("Context must contain 'howa_candidates'. Please provide multiple howa drafts to evaluate.")
+                raise ValueError("Context must contain 'howa_candidates'.")
             
-            best_howa = await self.reviewer.evaluate_and_select(theme, howa_candidates)
-            return {"best_howa": best_howa}
+            return await self.reviewer.evaluate_and_select(theme, howa_candidates)
+
             
         else:
             raise ValueError(f"Unknown step: {step}")
+
+    async def execute_interactive_step(self, step: str, theme: str, audiences: List[str], context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        [対話型API用] 単一のステップを実行し、結果を返す。
+        """
+        return await self.execute_step(step, theme, audiences, context)

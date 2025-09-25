@@ -19,7 +19,7 @@ class Writer:
             logger.error(f"Failed to initialize SakkaAgent: {e}")
             raise
 
-    async def write_howa(self, theme: str, topic: str, sutra_data: Dict[str, Any]) -> str:
+    async def write_howa(self, theme: str, topic: str, sutra_data: Dict[str, Any], audiences: List[str]) -> str:
         """
         テーマ、時事ネタ、経典データを組み合わせて一つの法話を生成する。
         """
@@ -37,7 +37,10 @@ class Writer:
 ## 2. 参考にする時事ネタ
 {topic}
 
-## 3. 引用する経典
+## 3. 対象者
+{audiences}
+
+## 4. 引用する経典
 - **一節**: {sutra_data.get('quote', 'N/A')}
 - **出典**: {sutra_data.get('source', 'N/A')}
 - **解説**: {sutra_data.get('explanation', 'N/A')}

@@ -38,6 +38,7 @@ class InteractiveStepRequest(BaseModel):
     """対話型APIのリクエスト"""
     step: Literal["create_prompts", "run_news_search", "run_sutra_search","write_howa", "evaluate_howa"]
     theme: str
+    audiences: List[str] = Field(default=[], description="対象となる聴衆の種類", example=["若者", "ビジネスパーソン"])
     context: Dict[str, Any] = {} # 前のステップからの情報を引き継ぐためのコンテキスト
 
 class InteractiveStepResponse(BaseModel):
