@@ -5,6 +5,8 @@ pydantic==2.11.3
 pydantic-settings==2.10.1
 python-dotenv==1.1.0
 google-generativeai
+google-cloud-discoveryengine
+google-cloud-aiplatform
 # テスト用
 pytest==7.3.1
 httpx==0.28.1
