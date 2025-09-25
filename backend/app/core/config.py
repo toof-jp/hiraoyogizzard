@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # CORS設定
     allowed_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
     
+    # Gemini API Key
+    gemini_api_key: str
+    
     # データベース設定（将来使用）
     database_url: Optional[str] = None
     
