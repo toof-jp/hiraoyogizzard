@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-	"/howa": {
+	"/v1/howa": {
 		parameters: {
 			query?: never;
 			header?: never;

@@ -1,11 +1,13 @@
 import { useState } from "react";
 
+type Audience = "子供" | "若者" | "ビジネスパーソン" | "高齢者" | "指定なし";
+
 interface HowaFormProps {
-  onSubmit: (theme: string, audiences: ("子供" | "若者" | "ビジネスパーソン" | "高齢者" | "指定なし")[]) => Promise<void>;
+  onSubmit: (theme: string, audiences: Audience[]) => Promise<void>;
   isLoading: boolean;
 }
 
-const audienceOptions = [
+const audienceOptions: { value: Audience; label: string }[] = [
   { value: "子供", label: "子供" },
   { value: "若者", label: "若者" },
   { value: "ビジネスパーソン", label: "ビジネスパーソン" },
@@ -15,13 +17,15 @@ const audienceOptions = [
 
 export function HowaForm({ onSubmit, isLoading }: HowaFormProps) {
   const [theme, setTheme] = useState<string>("");
-  const [selectedAudiences, setSelectedAudiences] = useState<("子供" | "若者" | "ビジネスパーソン" | "高齢者" | "指定なし")[]>(["指定なし"]);
+  const [selectedAudiences, setSelectedAudiences] = useState<Audience[]>([
+    "指定なし",
+  ]);
 
-  const handleAudienceChange = (audience: "子供" | "若者" | "ビジネスパーソン" | "高齢者" | "指定なし", checked: boolean) => {
+  const handleAudienceChange = (audience: Audience, checked: boolean) => {
     if (checked) {
-      setSelectedAudiences(prev => [...prev, audience]);
+      setSelectedAudiences((prev) => [...prev, audience]);
     } else {
-      setSelectedAudiences(prev => prev.filter(a => a !== audience));
+      setSelectedAudiences((prev) => prev.filter((a) => a !== audience));
     }
   };
 
@@ -33,9 +37,12 @@ export function HowaForm({ onSubmit, isLoading }: HowaFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>
-      <div style={{ marginBottom: '16px' }}>
-        <label htmlFor="theme" style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+    <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: "16px" }}>
+        <label
+          htmlFor="theme"
+          style={{ display: "block", marginBottom: "8px", fontWeight: "bold" }}
+        >
           法話のテーマ:
         </label>
         <input
@@ -46,26 +53,33 @@ export function HowaForm({ onSubmit, isLoading }: HowaFormProps) {
           placeholder="例: 感謝の心"
           required
           style={{
-            width: '100%',
-            padding: '8px',
-            fontSize: '16px',
-            border: '1px solid #ccc',
-            borderRadius: '4px'
+            width: "100%",
+            padding: "8px",
+            fontSize: "16px",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
           }}
         />
       </div>
 
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+      <div style={{ marginBottom: "16px" }}>
+        <label
+          style={{ display: "block", marginBottom: "8px", fontWeight: "bold" }}
+        >
           対象者 (複数選択可):
         </label>
         {audienceOptions.map((option) => (
-          <label key={option.value} style={{ display: 'block', marginBottom: '4px' }}>
+          <label
+            key={option.value}
+            style={{ display: "block", marginBottom: "4px" }}
+          >
             <input
               type="checkbox"
               checked={selectedAudiences.includes(option.value)}
-              onChange={(e) => handleAudienceChange(option.value, e.target.checked)}
-              style={{ marginRight: '8px' }}
+              onChange={(e) =>
+                handleAudienceChange(option.value, e.target.checked)
+              }
+              style={{ marginRight: "8px" }}
             />
             {option.label}
           </label>
@@ -76,13 +90,13 @@ export function HowaForm({ onSubmit, isLoading }: HowaFormProps) {
         type="submit"
         disabled={isLoading || !theme.trim() || selectedAudiences.length === 0}
         style={{
-          padding: '12px 24px',
-          fontSize: '16px',
-          backgroundColor: isLoading ? '#ccc' : '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: isLoading ? 'not-allowed' : 'pointer'
+          padding: "12px 24px",
+          fontSize: "16px",
+          backgroundColor: isLoading ? "#ccc" : "#007bff",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: isLoading ? "not-allowed" : "pointer",
         }}
       >
         {isLoading ? "生成中..." : "法話を生成"}
