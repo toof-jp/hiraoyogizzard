@@ -1,36 +1,46 @@
 interface LoadingSpinnerProps {
-  message?: string;
+	message?: string;
 }
 
-export function LoadingSpinner({ message = "読み込み中..." }: LoadingSpinnerProps) {
-  return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: '40px 20px',
-      textAlign: 'center'
-    }}>
-      <div style={{
-        position: 'relative',
-        width: '120px',
-        height: '120px',
-        marginBottom: '24px'
-      }}>
-        {/* 複数の波紋を作成 */}
-        <div className="ripple" style={{ animationDelay: '0s' }}></div>
-        <div className="ripple" style={{ animationDelay: '0.5s' }}></div>
-        <div className="ripple" style={{ animationDelay: '1s' }}></div>
-        <div className="ripple" style={{ animationDelay: '1.5s' }}></div>
-      </div>
-      <p style={{
-        margin: 0,
-        color: '#5a6b7d',
-        fontSize: '16px',
-        fontWeight: '500',
-        letterSpacing: '0.5px'
-      }}>{message}</p>
-      <style>{`
+export function LoadingSpinner({
+	message = "読み込み中...",
+}: LoadingSpinnerProps) {
+	return (
+		<div
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				alignItems: "center",
+				padding: "40px 20px",
+				textAlign: "center",
+			}}
+		>
+			<div
+				style={{
+					position: "relative",
+					width: "120px",
+					height: "120px",
+					marginBottom: "24px",
+				}}
+			>
+				{/* 複数の波紋を作成 */}
+				<div className="ripple" style={{ animationDelay: "0s" }}></div>
+				<div className="ripple" style={{ animationDelay: "0.5s" }}></div>
+				<div className="ripple" style={{ animationDelay: "1s" }}></div>
+				<div className="ripple" style={{ animationDelay: "1.5s" }}></div>
+			</div>
+			<p
+				style={{
+					margin: 0,
+					color: "#5a6b7d",
+					fontSize: "16px",
+					fontWeight: "500",
+					letterSpacing: "0.5px",
+				}}
+			>
+				{message}
+			</p>
+			<style>{`
         .ripple {
           position: absolute;
           top: 50%;
@@ -65,6 +75,6 @@ export function LoadingSpinner({ message = "読み込み中..." }: LoadingSpinne
           }
         }
       `}</style>
-    </div>
-  );
+		</div>
+	);
 }

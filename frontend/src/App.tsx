@@ -4,14 +4,14 @@ import { HomePage } from "./components/HomePage.tsx";
 import { HowaPage } from "./pages/HowaPage.tsx";
 
 function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/howa" element={<HowaPage />} />
-      </Routes>
-    </Router>
-  );
+	return (
+		<Router>
+			<Routes>
+				<Route path="/" element={<HomePage />} />
+				<Route path="/howa" element={<HowaPage />} />
+			</Routes>
+		</Router>
+	);
 }
 
 export default App;
