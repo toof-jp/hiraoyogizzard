@@ -1,12 +1,42 @@
 .home-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #6a9cb6 0%, #87ceeb 20%, #f0f8ff 100%);
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 2rem;
   font-family: "Noto Serif JP", serif;
+}
+
+.home-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.04) 0%, transparent 50%),
+    linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.02) 50%, transparent 60%),
+    linear-gradient(-45deg, transparent 40%, rgba(255, 255, 255, 0.02) 50%, transparent 60%);
+  background-size:
+    400px 400px,
+    300px 300px,
+    600px 600px,
+    200px 200px,
+    200px 200px;
+  background-position:
+    0 0,
+    100px 100px,
+    200px 200px,
+    0 0,
+    0 0;
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 .home-header {
@@ -38,6 +68,7 @@
   grid-template-columns: 1fr;
   gap: 1.5rem;
   width: 100%;
+  place-items: center;
 }
 
 .feature-button {
@@ -53,15 +84,19 @@
   box-shadow: 0 4px 20px rgba(106, 156, 182, 0.15);
   transition: all 0.3s ease;
   cursor: pointer;
-  min-height: 100px;
+  min-height: 140px;
+  height: 140px;
+  width: 100%;
+  max-width: 600px;
   backdrop-filter: blur(10px);
 }
 
 .feature-button.active:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(106, 156, 182, 0.25);
+  transform: translateY(-8px);
+  box-shadow: 0 16px 35px rgba(106, 156, 182, 0.3), 0 8px 20px rgba(106, 156, 182, 0.15);
   background: rgba(255, 255, 255, 1);
-  border-color: rgba(106, 156, 182, 0.4);
+  border-color: rgba(106, 156, 182, 0.5);
+  backdrop-filter: blur(15px);
 }
 
 .feature-button.disabled {
