@@ -226,3 +226,103 @@ def test_interactive_step_2_run_news_search():
         print(f"{i+1}: {topic}")
     print("--------------------------------------------------")
 
+
+# --- ★ここから新しい連携テストを追加 ---
+def test_interactive_step_3_chained_search():
+    """【連携テスト③】経典検索の結果を元にニュース検索を行う"""
+    theme = "執着を手放すこと"
+    context = {}
+
+    # 1. 最初のプロンプトを生成
+    step1_req = {"step": "create_prompts", "theme": theme, "context": context}
+    step1_res = client.post("/v1/howa/interactive-step", json=step1_req).json()
+    assert "news_search_prompt" in step1_res["result"]
+    context.update(step1_res["result"])
+
+    # 2. 経典を検索 (ダミー)
+    step2_req = {"step": "run_sutra_search", "theme": theme, "context": context}
+    step2_res = client.post("/v1/howa/interactive-step", json=step2_req).json()
+    assert "found_quote" in step2_res["result"]
+    context.update(step2_res["result"])
+
+    # --- ★ここからロジックを修正 ---
+    # 3. 経典の情報をコンテキストに含めて、「ニュース検索」を実行させる
+    #    (プロンプトの再生成は不要)
+    step3_req = {"step": "run_news_search", "theme": theme, "context": context}
+    step3_res = client.post("/v1/howa/interactive-step", json=step3_req)
+    
+    assert step3_res.status_code == 200
+    step3_data = step3_res.json()
+
+    # 4. 結果を検証
+    assert "found_topics" in step3_data["result"]
+    found_topics = step3_data["result"]["found_topics"]
+    assert isinstance(found_topics, list)
+    assert len(found_topics) > 0, "経典情報を元にしたニュース検索結果が空でした。"
+
+    print("\n--- News Search Results (with Sutra context) ---")
+    for topic in found_topics:
+        print(f"- {topic}")
+    print("------------------------------------------------")
+
+# --- テスト4: Gemini APIを実際に呼び出すE2Eテスト ---
+
+# @pytest.mark.skipif(not os.getenv("GOOGLE_API_KEY"), reason="GOOGLE_API_KEY is not set")
+@pytest.mark.e2e
+def test_4_e2e_full_generation_and_evaluation_flow():
+    """
+    【テスト4 / E2E】Gemini APIを実際に呼び出し、複数法話の作成から評価までの一連の流れをテストする。
+    注意: このテストは実際のAPIを呼び出すため、時間がかかり、実行にはAPIキーが必要です。
+    """
+    theme = "ミニマリズムと心の平穏"
+    context = {}
+
+    # ステップ1: プロンプト生成 (API呼び出しなし)
+    print(f"\n--- [E2E Test Start] Theme: {theme} ---")
+    response1 = client.post("/v1/howa/interactive-step", json={"step": "create_prompts", "theme": theme, "context": context})
+    assert response1.status_code == 200
+    context.update(response1.json()["result"])
+    print("[Step 1: Prompts Created]")
+    assert "news_search_prompt" in context
+    assert "sutra_search_prompt" in context
+
+    # ステップ2: 経典検索 (ダミーエージェント)
+    response2 = client.post("/v1/howa/interactive-step", json={"step": "run_sutra_search", "theme": theme, "context": context})
+    assert response2.status_code == 200
+    context.update(response2.json()["result"])
+    print(f"[Step 2: Sutra Found] -> {context['found_quote']['source']}")
+    assert "found_quote" in context
+    assert "法句経" in context["found_quote"]["source"] # ダミーデータが返ることを確認
+
+    # ステップ3: ニュース検索 (★実API呼び出し)
+    print("[Step 3: Calling News Researcher (Real API Call)]...")
+    response3 = client.post("/v1/howa/interactive-step", json={"step": "run_news_search", "theme": theme, "context": context})
+    assert response3.status_code == 200
+    context.update(response3.json()["result"])
+    print(f"[Step 3: Topics Found] -> {context['found_topics']}")
+    assert "found_topics" in context
+    assert isinstance(context["found_topics"], list)
+    assert len(context["found_topics"]) > 0, "ニュース検索でトピックが見つかりませんでした"
+
+    # ステップ4: 法話執筆 (★実API呼び出し)
+    print("[Step 4: Calling Writer (Real API Call)]...")
+    response4 = client.post("/v1/howa/interactive-step", json={"step": "write_howa", "theme": theme, "context": context})
+    assert response4.status_code == 200
+    generated_candidates = response4.json()["result"]["final_howa"]
+    print(f"[Step 4: Generated Candidates] -> {len(generated_candidates)} candidates")
+    assert isinstance(generated_candidates, list)
+    assert len(generated_candidates) == len(context["found_topics"]), "トピックの数と法話候補の数が一致しません"
+
+    # ステップ5: 法話評価 (ダミーエージェント)
+    print("[Step 5: Calling Reviewer (Dummy)]...")
+    context["howa_candidates"] = generated_candidates
+    response5 = client.post("/v1/howa/interactive-step", json={"step": "evaluate_howa", "theme": theme, "context": context})
+    assert response5.status_code == 200
+    final_result = response5.json()["result"]
+    print(f"[Step 5: Selected Best Howa] -> {final_result['best_howa'][:50]}...") # 長いので先頭だけ表示
+    assert "best_howa" in final_result
+    # ダミーの評価エージェントは最初の候補を選ぶはず
+    assert final_result["best_howa"] == generated_candidates[0]
+
+    print("\n✅ Test 4 (E2E): Full generation and evaluation flow completed successfully!")
+
