@@ -1,11 +1,14 @@
-:root {
-	font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic Medium", "Meiryo", "MS PGothic", system-ui, Avenir, Helvetica, Arial, sans-serif;
-	line-height: 1.5;
-	font-weight: 400;
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap');
 
-	color-scheme: light dark;
-	color: rgba(255, 255, 255, 0.87);
-	background-color: #242424;
+:root {
+	font-family: "Noto Serif JP", "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "MS PMincho", serif;
+	line-height: 1.8;
+	font-weight: 400;
+	letter-spacing: 0.05em;
+
+	color-scheme: light;
+	color: #2d3748;
+	background-color: #fafafa;
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
@@ -13,56 +16,100 @@
 	-moz-osx-font-smoothing: grayscale;
 }
 
-a {
-	font-weight: 500;
-	color: #646cff;
-	text-decoration: inherit;
-}
-a:hover {
-	color: #535bf2;
+* {
+	box-sizing: border-box;
 }
 
 body {
 	margin: 0;
-	display: flex;
-	place-items: center;
-	min-width: 320px;
-	min-height: 100vh;
+	font-family: inherit;
+	line-height: inherit;
+	letter-spacing: inherit;
+	background-color: #fafafa;
+	color: #2d3748;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: "Noto Serif JP", serif;
+	font-weight: 600;
+	line-height: 1.4;
+	letter-spacing: 0.01em;
+	margin: 0 0 0.75em 0;
+	color: #1a202c;
 }
 
 h1 {
-	font-size: 3.2em;
-	line-height: 1.1;
+	font-size: 2.5rem;
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+h2 {
+	font-size: 2rem;
+	font-weight: 600;
+}
+
+h3 {
+	font-size: 1.5rem;
+	font-weight: 500;
+}
+
+p {
+	line-height: 1.8;
+	letter-spacing: 0.02em;
+	margin: 0 0 1.25em 0;
+	color: #2d3748;
+}
+
+a {
+	font-weight: 500;
+	color: #6a9cb6;
+	text-decoration: none;
+	transition: color 0.2s ease;
+}
+
+a:hover {
+	color: #5a8ca0;
 }
 
 button {
 	border-radius: 8px;
 	border: 1px solid transparent;
-	padding: 0.6em 1.2em;
+	padding: 0.75em 1.5em;
 	font-size: 1em;
 	font-weight: 500;
-	font-family: inherit;
-	background-color: #1a1a1a;
+	font-family: "Noto Serif JP", serif;
+	letter-spacing: 0.05em;
+	background-color: #ffffff;
+	color: #2d3748;
 	cursor: pointer;
-	transition: border-color 0.25s;
-}
-button:hover {
-	border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-	outline: 4px auto -webkit-focus-ring-color;
+	transition: all 0.2s ease;
+	border: 1px solid #e2e8f0;
 }
 
-@media (prefers-color-scheme: light) {
-	:root {
-		color: #213547;
-		background-color: #ffffff;
-	}
-	a:hover {
-		color: #747bff;
-	}
-	button {
-		background-color: #f9f9f9;
-	}
+button:hover {
+	border-color: #6a9cb6;
+	background-color: #f7fafc;
+}
+
+button:focus,
+button:focus-visible {
+	outline: 2px solid #6a9cb6;
+	outline-offset: 2px;
+}
+
+/* 日本語文章の読みやすさを向上 */
+.japanese-text {
+	font-family: "Noto Serif JP", serif;
+	line-height: 1.9;
+	letter-spacing: 0.05em;
+	word-spacing: 0.1em;
+}
+
+/* 引用部分の特別なスタイル */
+.sutra-quote {
+	font-family: "Noto Serif JP", serif;
+	font-weight: 400;
+	line-height: 1.9;
+	letter-spacing: 0.08em;
 }
