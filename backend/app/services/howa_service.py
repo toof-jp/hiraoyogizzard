@@ -8,6 +8,7 @@ from .agents.newsResearcher import NewsResearcher
 from .agents.sutraResearcher import SutraResearcher
 from .agents.writer import Writer
 from .agents.reviewer import Reviewer
+from .agents.kyotenFinder import KyotenFinder, KyotenSearchRequest, KyotenSearchResponse
 from fastapi import HTTPException
 import logging
 
@@ -21,7 +22,8 @@ class HowaGenerationService:
         self.gemini_service = GeminiService()
         self.query_maker = QueryMaker()
         self.news_researcher = NewsResearcher()
-        self.sutra_researcher = SutraResearcher()
+        #self.sutra_researcher = SutraResearcher()
+        self.kyoten_finder = KyotenFinder()
         self.writer = Writer()
         self.reviewer = Reviewer()
         
@@ -60,8 +62,14 @@ class HowaGenerationService:
                 # 先にプロンプトを生成する必要があることを示唆するエラー
                 raise ValueError("Context must contain 'sutra_search_prompt'. Please run 'create_prompts' step first.")
 
-            quote_data = await self.sutra_researcher.search_sutra_quote(sutra_prompt)
-            return {"found_quote": quote_data}
+            search_request = KyotenSearchRequest(theme=sutra_prompt)
+            response: KyotenSearchResponse = await self.kyoten_finder.search_sutra_placeholder(search_request)
+            found_quote_dict = {
+                "quote": response.sutra_text,
+                "source": response.source,
+                "explanation": response.context
+            }
+            return {"found_quote": found_quote_dict}
 
         elif step == "run_news_search":
             # ステップ2: 遊行僧エージェントが時事ネタを検索する
