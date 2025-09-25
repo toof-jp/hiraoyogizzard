@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/KUnob/Documents/internship/PKSHA/hachathon_2025/hiraoyogizzard/backend/app/api/endpoints/**)",
+      "Read(//c/Users/KUnob/Documents/internship/PKSHA/hachathon_2025/hiraoyogizzard/backend/app/models/**)",
+      "Read(//c/Users/KUnob/Documents/internship/PKSHA/hachathon_2025/hiraoyogizzard/backend/app/services/**)",
+      "Bash(npm run check:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

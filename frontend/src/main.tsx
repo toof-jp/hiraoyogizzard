@@ -5,21 +5,15 @@ import App from "./App.tsx";
 import "./index.css";
 
 async function enableMocking() {
-  // 開発環境でない場合は、何もしない
-  if (!import.meta.env.DEV) {
-    return;
-  }
-
-  const { worker } = await import("./mocks/browser.js");
-
-  // `worker.start()` は非同期です。
-  return worker.start();
+	// MSWモックを無効にして実APIを使用
+	// 必要に応じてimport.meta.env.VITE_USE_MOCKSなどの環境変数で制御可能
+	return;
 }
 
 enableMocking().then(() => {
-  ReactDOM.createRoot(document.getElementById("root")!).render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
+	ReactDOM.createRoot(document.getElementById("root")!).render(
+		<React.StrictMode>
+			<App />
+		</React.StrictMode>,
+	);
 });
