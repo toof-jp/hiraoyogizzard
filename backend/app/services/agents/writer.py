@@ -56,6 +56,7 @@ class Writer:
             response = await self.model.generate_content_async(prompt)
             final_text = response.text.strip()
             logger.info("Successfully generated final howa text.")
+            print(final_text)  # デバッグ用に生成された法話を出力
             return final_text
         except Exception as e:
             logger.error(f"Failed to generate final howa text: {e}")
