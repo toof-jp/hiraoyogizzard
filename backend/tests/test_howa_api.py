@@ -23,6 +23,13 @@ def test_health_check():
     assert data["status"] == "ok"
 
 
+def test_healthz_check():
+    """/healthz エンドポイントのテスト"""
+    response = client.get("/healthz")
+    assert response.status_code == 200
+    assert response.text == "ok"
+
+
 # 以下の2つのテストは現在の仕様にないためコメントアウト
 # def test_get_themes():
 #     """テーマ取得エンドポイントのテスト"""
