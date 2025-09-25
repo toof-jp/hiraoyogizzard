@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hiraoyogizzard-backend
+  namespace: hiraoyogizzard
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "hiraoyogizzard-static-ip"
+    networking.gke.io/managed-certificates: "hiraoyogizzard-certificate"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hiraoyogizzard-backend
+                port:
+                  number: 8000
