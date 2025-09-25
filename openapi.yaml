@@ -1,14 +1,18 @@
 # openapi.yaml
+
 # この一行目が「書類の種類」を宣言する、最も重要な部分です。
 openapi: 3.0.3
+
 # これは「書類のタイトル」に相当します。
 info:
   title: "法話メーカー"
   description: "AIエージェントが、法話の草稿を生成するためのAPIです。"
   version: "1.0.0"
+
 # これはAPIサーバーの「住所」です。
 servers:
   - url: "/v1"
+
 # これがAPIの「本体」、具体的な機能の定義です。
 paths:
   /howa:
@@ -31,6 +35,7 @@ paths:
           description: "サーバー内部エラー"
         "503":
           description: "外部サービス利用不可"
+
 # これが「巻末の用語集」、再利用する部品の定義です。
 components:
   schemas:
@@ -47,6 +52,7 @@ components:
             type: string
             enum: [子供, 若者, ビジネスパーソン, 高齢者, 指定なし]
           example: ["若者"]
+
     HowaResponse:
       type: object
       properties:
