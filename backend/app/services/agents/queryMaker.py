@@ -1,6 +1,7 @@
 import logging
 import google.generativeai as genai
 from ...core.config import settings
+from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
