@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hiraoyogizzard-backend
+  namespace: hiraoyogizzard
+  labels:
+    app: hiraoyogizzard-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hiraoyogizzard-backend
+  template:
+    metadata:
+      labels:
+        app: hiraoyogizzard-backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/toof-jp/hiraoyogizzard-backend:sha-bbc9eb7
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hiraoyogizzard-backend-secrets
+                  key: GEMINI_API_KEY
