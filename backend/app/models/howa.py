@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Dict, Any
 from enum import Enum
 
 
@@ -20,16 +20,8 @@ class SutraQuote(BaseModel):
 
 class GenerateHowaRequest(BaseModel):
     """法話生成リクエスト"""
-    theme: str = Field(
-        ..., 
-        description="法話の中心となるテーマや感情",
-        example="感謝"
-    )
-    audiences: List[AudienceType] = Field(
-        ..., 
-        description="この法話を届けたい人々の層",
-        example=["若者"]
-    )
+    theme: str = Field(..., min_length=1, description="法話のテーマ", example="感謝")
+    audiences: List[str] = Field(..., min_length=1, description="対象となる聴衆の種類", example=["若者", "ビジネスパーソン"])
 
 
 class HowaResponse(BaseModel):

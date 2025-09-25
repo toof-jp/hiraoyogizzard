@@ -4,13 +4,13 @@ from typing import List
 from ...models.howa import GenerateHowaRequest, HowaResponse
 from ...services.howa_service import HowaGenerationService
 
-router = APIRouter(prefix="/api/v1/howa", tags=["法話生成"])
+router = APIRouter(prefix="/howa", tags=["法話生成"])
 
 # サービスインスタンス
 howa_service = HowaGenerationService()
 
 
-@router.post("/generate", response_model=HowaResponse)
+@router.post("", response_model=HowaResponse)
 async def generate_howa(request: GenerateHowaRequest):
     """
     法話を生成する

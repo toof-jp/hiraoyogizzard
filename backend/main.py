@@ -23,7 +23,7 @@ app.add_middleware(
 )
 
 # APIルーターの追加
-app.include_router(api_router)
+app.include_router(api_router, prefix="/v1")
 
 
 # ヘルスチェック用エンドポイント

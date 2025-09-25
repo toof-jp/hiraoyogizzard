@@ -24,7 +24,7 @@ def test_health_check():
 
 def test_get_themes():
     """テーマ取得エンドポイントのテスト"""
-    response = client.get("/api/v1/howa/themes")
+    response = client.get("/v1/howa/themes")
     assert response.status_code == 200
     data = response.json()
     assert "themes" in data
@@ -33,7 +33,7 @@ def test_get_themes():
 
 def test_get_audiences():
     """対象者取得エンドポイントのテスト"""
-    response = client.get("/api/v1/howa/audiences")
+    response = client.get("/v1/howa/audiences")
     assert response.status_code == 200
     data = response.json()
     assert "audiences" in data
@@ -46,7 +46,7 @@ def test_generate_howa_success():
         "theme": "感謝",
         "audiences": ["若者"]
     }
-    response = client.post("/api/v1/howa/generate", json=request_data)
+    response = client.post("/v1/howa", json=request_data)
     assert response.status_code == 200
     data = response.json()
     
@@ -68,7 +68,7 @@ def test_generate_howa_invalid_request():
         "theme": "",
         "audiences": ["若者"]
     }
-    response = client.post("/api/v1/howa/generate", json=request_data)
+    response = client.post("/v1/howa", json=request_data)
     assert response.status_code == 422
     
     # audiencesが空のケース
@@ -76,5 +76,5 @@ def test_generate_howa_invalid_request():
         "theme": "感謝",
         "audiences": []
     }
-    response = client.post("/api/v1/howa/generate", json=request_data)
+    response = client.post("/v1/howa", json=request_data)
     assert response.status_code == 422
