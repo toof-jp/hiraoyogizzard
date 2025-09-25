@@ -1,210 +1,210 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+	max-width: 1280px;
+	margin: 0 auto;
+	padding: 2rem;
+	text-align: center;
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+	height: 6em;
+	padding: 1.5em;
+	will-change: filter;
+	transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+	filter: drop-shadow(0 0 2em #646cffaa);
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+	filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
 @keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+	a:nth-of-type(2) .logo {
+		animation: logo-spin infinite 20s linear;
+	}
 }
 
 .card {
-  padding: 2em;
+	padding: 2em;
 }
 
 .read-the-docs {
-  color: #888;
+	color: #888;
 }
 
 /* src/App.css */
 .container {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
+	max-width: 800px;
+	margin: 2rem auto;
+	padding: 2rem;
 }
 
 header {
-  text-align: center;
-  margin-bottom: 2rem;
+	text-align: center;
+	margin-bottom: 2rem;
 }
 
 header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #6a9cb6 0%, #5a8ca0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+	font-size: 2.5rem;
+	margin-bottom: 0.5rem;
+	background: linear-gradient(135deg, #6a9cb6 0%, #5a8ca0 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
 }
 
 header p {
-  opacity: 0.8;
-  font-size: 1.1rem;
+	opacity: 0.8;
+	font-size: 1.1rem;
 }
 
 button {
-  margin: 2rem auto;
-  display: block;
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
-  background: linear-gradient(135deg, #6a9cb6 0%, #5a8ca0 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(106, 156, 182, 0.3);
+	margin: 2rem auto;
+	display: block;
+	padding: 1rem 2rem;
+	font-size: 1.1rem;
+	background: linear-gradient(135deg, #6a9cb6 0%, #5a8ca0 100%);
+	color: white;
+	border: none;
+	border-radius: 12px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 15px rgba(106, 156, 182, 0.3);
 }
 
 button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(106, 156, 182, 0.4);
+	transform: translateY(-2px);
+	box-shadow: 0 8px 25px rgba(106, 156, 182, 0.4);
 }
 
 button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: 0 4px 15px rgba(106, 156, 182, 0.3);
+	opacity: 0.7;
+	cursor: not-allowed;
+	transform: none;
+	box-shadow: 0 4px 15px rgba(106, 156, 182, 0.3);
 }
 
 .error {
-  color: #e74c3c;
-  background: #fdf2f2;
-  border: 1px solid #fecaca;
-  padding: 1rem;
-  border-radius: 8px;
-  margin: 1rem 0;
-  text-align: center;
+	color: #e74c3c;
+	background: #fdf2f2;
+	border: 1px solid #fecaca;
+	padding: 1rem;
+	border-radius: 8px;
+	margin: 1rem 0;
+	text-align: center;
 }
 
 .howa-card {
-  margin-top: 2rem;
-  padding: 2rem;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #f1f5f7 100%);
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 25px rgba(106, 156, 182, 0.1);
-  color: #2d3748;
+	margin-top: 2rem;
+	padding: 2rem;
+	border-radius: 16px;
+	background: linear-gradient(135deg, #f8f9fa 0%, #f1f5f7 100%);
+	border: 1px solid #e2e8f0;
+	box-shadow: 0 10px 25px rgba(106, 156, 182, 0.1);
+	color: #2d3748;
 }
 
 .howa-card h2 {
-  margin-top: 0;
-  margin-bottom: 2rem;
-  font-size: 1.8rem;
-  color: #2d3748;
-  text-align: center;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #e2e8f0;
+	margin-top: 0;
+	margin-bottom: 2rem;
+	font-size: 1.8rem;
+	color: #2d3748;
+	text-align: center;
+	padding-bottom: 1rem;
+	border-bottom: 2px solid #e2e8f0;
 }
 
 .howa-card section {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	margin-bottom: 2rem;
+	padding: 1.5rem;
+	background: white;
+	border-radius: 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .howa-card section h3 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  color: #4a5568;
-  font-size: 1.2rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+	margin-top: 0;
+	margin-bottom: 1rem;
+	color: #4a5568;
+	font-size: 1.2rem;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 }
 
 .howa-card section h3::before {
-  content: "●";
-  color: #6a9cb6;
+	content: "●";
+	color: #6a9cb6;
 }
 
 .howa-card p {
-  line-height: 1.8;
-  color: #2d3748;
-  margin: 0;
+	line-height: 1.8;
+	color: #2d3748;
+	margin: 0;
 }
 
 blockquote {
-  position: relative;
-  border: none;
-  padding: 2rem 2rem 2rem 3rem;
-  margin: 2rem 0;
-  background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  font-style: normal;
-  color: #2d3748;
+	position: relative;
+	border: none;
+	padding: 2rem 2rem 2rem 3rem;
+	margin: 2rem 0;
+	background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%);
+	border-radius: 12px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	font-style: normal;
+	color: #2d3748;
 }
 
 blockquote::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: linear-gradient(180deg, #c17930 0%, #a0671f 100%);
-  border-radius: 2px;
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: 4px;
+	background: linear-gradient(180deg, #c17930 0%, #a0671f 100%);
+	border-radius: 2px;
 }
 
 blockquote::after {
-  content: "";
-  position: absolute;
-  top: 0.5rem;
-  left: 1rem;
-  font-size: 3rem;
-  color: #c17930;
-  opacity: 0.3;
-  font-family: "Times New Roman", serif;
-  line-height: 1;
+	content: "";
+	position: absolute;
+	top: 0.5rem;
+	left: 1rem;
+	font-size: 3rem;
+	color: #c17930;
+	opacity: 0.3;
+	font-family: "Times New Roman", serif;
+	line-height: 1;
 }
 
 blockquote p {
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  font-family: "Noto Serif JP", serif;
-  line-height: 1.9;
-  letter-spacing: 0.05em;
-  font-weight: 400;
-  color: #1a202c;
+	margin-bottom: 1rem;
+	font-size: 1.1rem;
+	font-family: "Noto Serif JP", serif;
+	line-height: 1.9;
+	letter-spacing: 0.05em;
+	font-weight: 400;
+	color: #1a202c;
 }
 
 blockquote footer {
-  font-weight: 500;
-  color: #c17930;
-  font-style: normal;
-  font-size: 0.95rem;
-  margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid #e2e8f0;
-  text-align: right;
+	font-weight: 500;
+	color: #c17930;
+	font-style: normal;
+	font-size: 0.95rem;
+	margin-top: 1rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid #e2e8f0;
+	text-align: right;
 }
