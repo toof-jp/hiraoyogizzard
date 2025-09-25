@@ -1,7 +1,7 @@
 import logging
 import re
 import json
-from typing import List
+from typing import List, Dict, Any
 import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
@@ -15,17 +15,20 @@ class Reviewer:
         logger.info("Reviewer initialized with its own Gemini model instance.")
         self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
-    # --- ▼▼▼ 戻り値の型ヒントを str に戻す ▼▼▼ ---
-    async def evaluate_and_select(self, theme: str, howa_candidates: List[str]) -> str:
+    # --- ▼▼▼ 戻り値の型ヒントを Dict[str, Any] に変更 ▼▼▼ ---
+    async def evaluate_and_select(self, theme: str, howa_candidates: List[str]) -> Dict[str, Any]:
         """
-        法話の候補リストから最も優れたものを選択し、その本文を返す。
+        法話の候補リストから最も優れたものを選択し、パースして辞書として返す。
         """
+        # フォールバック用のダミーデータ
+        fallback_data = {"title": theme, "introduction": "法話の評価中にエラーが発生しました。", "conclusion": ""}
+
         if not howa_candidates:
-            return "適切な法話が見つかりませんでした。"
+            return fallback_data
         
         if len(howa_candidates) == 1:
-            logger.info("Only one candidate available. Selecting it directly.")
-            return howa_candidates[0]
+            logger.info("Only one candidate available. Selecting and parsing it directly.")
+            return self._parse_howa_string(howa_candidates[0], fallback_data)
 
         logger.info(f"Evaluating {len(howa_candidates)} candidates using LLM...")
         prompt = self._create_evaluation_prompt(theme, howa_candidates)
@@ -41,23 +44,35 @@ class Reviewer:
                 best_index = data.get("best_choice_index")
                 reasoning = data.get("reasoning", "理由が提供されませんでした。")
 
-                # --- ▼▼▼ 理由をprintで表示 ▼▼▼ ---
                 print("\n--- [DEBUG] Selection Reasoning ---")
                 print(reasoning)
                 print("---------------------------------\n")
-                # --- ▲▲▲ ここまで ▲▲▲ ---
 
                 if isinstance(best_index, int) and 0 <= best_index - 1 < len(howa_candidates):
-                    selected_howa = howa_candidates[best_index - 1]
+                    # --- ▼▼▼ 選択したJSON文字列をパースするロジックを修正 ▼▼▼ ---
+                    selected_howa_str = howa_candidates[best_index - 1]
                     logger.info(f"LLM selected candidate number {best_index}.")
-                    return selected_howa # ★ 文字列だけを返す
+                    return self._parse_howa_string(selected_howa_str, fallback_data)
+                    # --- ▲▲▲ ここまで修正 ▲▲▲ ---
 
-            logger.warning(f"Could not parse JSON from LLM response: '{response_text}'. Falling back.")
-            return howa_candidates[0] # ★ 文字列だけを返す
+            logger.warning(f"Could not parse selection JSON from LLM response: '{response_text}'. Falling back.")
+            return self._parse_howa_string(howa_candidates[0], fallback_data)
 
         except Exception as e:
             logger.error(f"Error during LLM-based evaluation: {e}. Falling back.")
-            return howa_candidates[0] # ★ 文字列だけを返す
+            return self._parse_howa_string(howa_candidates[0], fallback_data)
+
+    def _parse_howa_string(self, howa_str: str, fallback_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        法話のJSON文字列を安全にパースする内部ヘルパー。
+        """
+        try:
+            # マークダウンのコードブロックを除去
+            cleaned_str = re.sub(r'```json\s*|\s*```', '', howa_str).strip()
+            return json.loads(cleaned_str)
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse selected howa string as JSON: {e}\nString was: {howa_str}")
+            return fallback_data
 
     def _create_evaluation_prompt(self, theme: str, candidates: List[str]) -> str:
         # このメソッドは変更なし (JSONを要求するプロンプトのまま)
