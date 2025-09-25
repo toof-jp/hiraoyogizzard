@@ -1,7 +1,42 @@
 # openapi.yaml
-# ---
-# 人間にもAIにも分かりやすいように、各フィールドの「意図」をコメントで記述
-# ---
+
+# この一行目が「書類の種類」を宣言する、最も重要な部分です。
+openapi: 3.0.3
+
+# これは「書類のタイトル」に相当します。
+info:
+  title: "法話メーカー"
+  description: "AIエージェントが、法話の草稿を生成するためのAPIです。"
+  version: "1.0.0"
+
+# これはAPIサーバーの「住所」です。
+servers:
+  - url: "/v1"
+
+# これがAPIの「本体」、具体的な機能の定義です。
+paths:
+  /howa:
+    post:
+      summary: "法話の草稿を生成する"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateHowaRequest"
+      responses:
+        "200":
+          description: "法話の生成に成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HowaResponse"
+        "500":
+          description: "サーバー内部エラー"
+        "503":
+          description: "外部サービス利用不可"
+
+# これが「巻末の用語集」、再利用する部品の定義です。
 components:
   schemas:
     GenerateHowaRequest:
@@ -10,11 +45,9 @@ components:
       properties:
         theme:
           type: string
-          description: "法話の中心となるテーマや感情"
           example: "感謝"
         audiences:
           type: array
-          description: "この法話を届けたい人々の層"
           items:
             type: string
             enum: [子供, 若者, ビジネスパーソン, 高齢者, 指定なし]
@@ -25,26 +58,18 @@ components:
       properties:
         title:
           type: string
-          description: "生成された法話の顔となるタイトル"
         introduction:
           type: string
-          description: "聴衆の心を引き込む、物語の始まり（時事ネタを含む）"
         problem_statement:
           type: string
-          description: "導入から仏教のテーマへと繋ぐ、問題提起"
         sutra_quote:
           type: object
-          description: "法話の根拠となる、経典からの引用"
           properties:
             text:
               type: string
-              description: "引用された経典の本文"
             source:
               type: string
-              description: "出典（例: 法句経 第十七章『忿怒品』）"
         modern_example:
           type: string
-          description: "教えを現代のシーンで解説する、具体的な例え話"
         conclusion:
           type: string
-          description: "聴衆が持ち帰れる、物語の締めくくりと実践のヒント"
