@@ -37,8 +37,23 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 3
           env:
-            - name: GEMINI_API_KEY
+            - name: GOOGLE_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: hiraoyogizzard-backend-secrets
-                  key: GEMINI_API_KEY
+                  key: GOOGLE_API_KEY
+            - name: VERTEX_AI_PROJECT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: hiraoyogizzard-backend-secrets
+                  key: VERTEX_AI_PROJECT_ID
+            - name: VERTEX_AI_LOCATION
+              valueFrom:
+                secretKeyRef:
+                  name: hiraoyogizzard-backend-secrets
+                  key: VERTEX_AI_LOCATION
+            - name: VERTEX_AI_DATA_STORE_ID
+              valueFrom:
+                secretKeyRef:
+                  name: hiraoyogizzard-backend-secrets
+                  key: VERTEX_AI_DATA_STORE_ID
