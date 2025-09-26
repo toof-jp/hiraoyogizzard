@@ -5,6 +5,8 @@ metadata:
   namespace: hiraoyogizzard
   labels:
     app: hiraoyogizzard-backend
+  annotations:
+    beta.cloud.google.com/backend-config: '{"default": "hiraoyogizzard-backend-config"}'
 spec:
   type: NodePort
   selector:
