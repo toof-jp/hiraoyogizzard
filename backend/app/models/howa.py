@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Literal
+from typing import List, Dict, Any, Literal, Optional
 from enum import Enum
 
 
@@ -46,3 +46,28 @@ class InteractiveStepResponse(BaseModel):
     step: str
     result: Dict[str, Any]
     message: str
+
+
+class HowaTaskStatus(str, Enum):
+    """法話生成タスクのステータス"""
+
+    QUEUED = "queued"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class HowaTaskSubmissionResponse(BaseModel):
+    """タスク作成時のレスポンス"""
+
+    task_id: str
+    status: HowaTaskStatus
+
+
+class HowaTaskStatusResponse(BaseModel):
+    """タスクの現在の状態を返すレスポンス"""
+
+    task_id: str
+    status: HowaTaskStatus
+    result: Optional[HowaResponse] = None
+    error: Optional[str] = None

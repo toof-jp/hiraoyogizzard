@@ -32,10 +32,18 @@ class Settings(BaseSettings):
     
     # データベース設定（将来使用）
     database_url: Optional[str] = None
-    
+
     # セキュリティ設定
     secret_key: str = "your-secret-key-here"
-    
+
+    # Valkey / Redis 設定
+    valkey_host: str = "valkey"
+    valkey_port: int = 6379
+    valkey_db: int = 0
+    valkey_password: Optional[str] = None
+    valkey_queue_name: str = "howa:tasks"
+    valkey_task_ttl_seconds: int = 3600
+
     class Config:
         env_file = ".env"
 

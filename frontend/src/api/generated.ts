@@ -4,95 +4,153 @@
  */
 
 export interface paths {
-	"/v1/howa": {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
-		/** 法話の草稿を生成する */
-		post: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path?: never;
-				cookie?: never;
-			};
-			requestBody: {
-				content: {
-					"application/json": components["schemas"]["GenerateHowaRequest"];
-				};
-			};
-			responses: {
-				/** @description 法話の生成に成功 */
-				200: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						"application/json": components["schemas"]["HowaResponse"];
-					};
-				};
-				/** @description サーバー内部エラー */
-				500: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content?: never;
-				};
-				/** @description 外部サービス利用不可 */
-				503: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content?: never;
-				};
-			};
-		};
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
+    "/howa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 法話の草稿を生成する */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["GenerateHowaRequest"];
+                };
+            };
+            responses: {
+                /** @description タスクの登録に成功 */
+                202: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["HowaTaskSubmissionResponse"];
+                    };
+                };
+                /** @description サーバー内部エラー */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description 外部サービス利用不可 */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/howa/{task_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 法話生成タスクの状態を取得する */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    task_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description タスクの状態を返却 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["HowaTaskStatusResponse"];
+                    };
+                };
+                /** @description タスクが存在しない */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description キューサービスが利用できない */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-	schemas: {
-		GenerateHowaRequest: {
-			/** @example 感謝 */
-			theme: string;
-			/** @example [
-			 *       "若者"
-			 *     ] */
-			audiences: (
-				| "子供"
-				| "若者"
-				| "ビジネスパーソン"
-				| "高齢者"
-				| "指定なし"
-			)[];
-		};
-		HowaResponse: {
-			title?: string;
-			introduction?: string;
-			problem_statement?: string;
-			sutra_quote?: {
-				text?: string;
-				source?: string;
-			};
-			modern_example?: string;
-			conclusion?: string;
-		};
-	};
-	responses: never;
-	parameters: never;
-	requestBodies: never;
-	headers: never;
-	pathItems: never;
+    schemas: {
+        GenerateHowaRequest: {
+            /** @example 感謝 */
+            theme: string;
+            /** @example [
+             *       "若者"
+             *     ] */
+            audiences: ("子供" | "若者" | "ビジネスパーソン" | "高齢者" | "指定なし")[];
+        };
+        HowaResponse: {
+            title?: string;
+            introduction?: string;
+            problem_statement?: string;
+            sutra_quote?: {
+                text?: string;
+                source?: string;
+            };
+            modern_example?: string;
+            conclusion?: string;
+        };
+        /** @enum {string} */
+        HowaTaskStatus: "queued" | "processing" | "completed" | "failed";
+        HowaTaskSubmissionResponse: {
+            task_id: string;
+            status: components["schemas"]["HowaTaskStatus"];
+        };
+        HowaTaskStatusResponse: {
+            task_id: string;
+            status: components["schemas"]["HowaTaskStatus"];
+            result?: components["schemas"]["HowaResponse"];
+            error?: string | null;
+        };
+    };
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

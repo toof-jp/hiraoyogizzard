@@ -25,16 +25,37 @@ paths:
             schema:
               $ref: "#/components/schemas/GenerateHowaRequest"
       responses:
-        "200":
-          description: "法話の生成に成功"
+        "202":
+          description: "タスクの登録に成功"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HowaResponse"
+                $ref: "#/components/schemas/HowaTaskSubmissionResponse"
         "500":
           description: "サーバー内部エラー"
         "503":
           description: "外部サービス利用不可"
+
+  /howa/{task_id}:
+    get:
+      summary: "法話生成タスクの状態を取得する"
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "タスクの状態を返却"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HowaTaskStatusResponse"
+        "404":
+          description: "タスクが存在しない"
+        "503":
+          description: "キューサービスが利用できない"
 
 # これが「巻末の用語集」、再利用する部品の定義です。
 components:
@@ -73,3 +94,28 @@ components:
           type: string
         conclusion:
           type: string
+    HowaTaskStatus:
+      type: string
+      enum: [queued, processing, completed, failed]
+    HowaTaskSubmissionResponse:
+      type: object
+      required: [task_id, status]
+      properties:
+        task_id:
+          type: string
+        status:
+          $ref: "#/components/schemas/HowaTaskStatus"
+    HowaTaskStatusResponse:
+      type: object
+      required: [task_id, status]
+      properties:
+        task_id:
+          type: string
+        status:
+          $ref: "#/components/schemas/HowaTaskStatus"
+        result:
+          $ref: "#/components/schemas/HowaResponse"
+          nullable: true
+        error:
+          type: string
+          nullable: true

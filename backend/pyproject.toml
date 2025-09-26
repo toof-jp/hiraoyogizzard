@@ -16,6 +16,7 @@ dependencies = [
     "python-dotenv==1.1.0",
     "python-multipart==0.0.20",
     "uvicorn[standard]==0.34.1",
+    "redis>=5.0.3",
 ]
 
 [dependency-groups]

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hiraoyogizzard-valkey
+  namespace: hiraoyogizzard
+  labels:
+    app: hiraoyogizzard-valkey
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hiraoyogizzard-valkey
+  template:
+    metadata:
+      labels:
+        app: hiraoyogizzard-valkey
+    spec:
+      containers:
+        - name: valkey
+          image: valkey/valkey:8-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 6379
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: valkey-data
+              mountPath: /data
+      volumes:
+        - name: valkey-data
+          emptyDir: {}

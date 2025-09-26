@@ -1,18 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../App.css";
-import { generateHowa } from "../api/client.js";
+import { createHowaTask, fetchHowaTask } from "../api/client.js";
 import type { components } from "../api/generated.js";
 import { HowaForm } from "../components/HowaForm.tsx";
 import { LoadingSpinner } from "../components/LoadingSpinner.tsx";
 import { HowaFeedback } from "../components/HowaFeedback.tsx";
 
 type HowaResponse = components["schemas"]["HowaResponse"];
+type HowaTaskStatus = components["schemas"]["HowaTaskStatus"];
 
 export function HowaPage() {
 	const [howa, setHowa] = useState<HowaResponse | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [taskId, setTaskId] = useState<string | null>(null);
+	const [taskStatus, setTaskStatus] = useState<HowaTaskStatus | null>(null);
 
 	const handleSubmit = async (
 		theme: string,
@@ -21,23 +24,89 @@ export function HowaPage() {
 		setIsLoading(true);
 		setError(null);
 		setHowa(null);
+		setTaskId(null);
+		setTaskStatus(null);
 		try {
-			const response = await generateHowa({
+			const submission = await createHowaTask({
 				theme,
 				audiences,
 			});
-			if (response) {
-				setHowa(response);
+			if (!submission || !submission.task_id) {
+				throw new Error("タスクIDが取得できませんでした。");
 			}
+			setTaskId(submission.task_id);
+			setTaskStatus(submission.status ?? "queued");
 		} catch (err) {
 			setError(
 				"法話の生成に失敗しました。APIサーバーが起動していることを確認してください。",
 			);
 			console.error(err);
-		} finally {
 			setIsLoading(false);
 		}
 	};
+
+	useEffect(() => {
+		if (!taskId) {
+			return;
+		}
+
+		let cancelled = false;
+		let timeoutId: number | undefined;
+
+		const poll = async () => {
+			try {
+				const statusResponse = await fetchHowaTask(taskId);
+				if (cancelled) {
+					return;
+				}
+				setTaskStatus(statusResponse.status);
+
+				if (statusResponse.status === "completed") {
+					if (statusResponse.result) {
+						setHowa(statusResponse.result);
+					} else {
+						setError("タスクは完了しましたが結果を取得できませんでした。");
+					}
+					setIsLoading(false);
+					setTaskId(null);
+					return;
+				}
+
+				if (statusResponse.status === "failed") {
+					setError(
+						statusResponse.error ?? "法話の生成に失敗しました。時間をおいて再度お試しください。",
+					);
+					setIsLoading(false);
+					setTaskId(null);
+					return;
+				}
+
+				timeoutId = window.setTimeout(poll, 2000);
+			} catch (err) {
+				if (cancelled) {
+					return;
+				}
+				console.error(err);
+				setError("タスクの状態取得に失敗しました。時間をおいて再試行してください。");
+				setIsLoading(false);
+				setTaskId(null);
+			}
+		};
+
+		poll();
+
+		return () => {
+			cancelled = true;
+			if (timeoutId !== undefined) {
+				window.clearTimeout(timeoutId);
+			}
+		};
+	}, [taskId]);
+
+	const loadingMessage =
+		taskStatus === "queued"
+			? "キューで順番待ちをしています..."
+			: "AIが法話を執筆中です...";
 
 	return (
 		<div className="container">
@@ -61,7 +130,7 @@ export function HowaPage() {
 			<main>
 				<HowaForm onSubmit={handleSubmit} isLoading={isLoading} />
 
-				{isLoading && <LoadingSpinner message="AIが法話を執筆中です..." />}
+				{isLoading && <LoadingSpinner message={loadingMessage} />}
 				{error && (
 					<div
 						style={{
@@ -75,6 +144,11 @@ export function HowaPage() {
 					>
 						<strong>エラー:</strong> {error}
 					</div>
+				)}
+				{taskId && !error && isLoading && (
+					<p style={{ marginBottom: "20px", color: "#555" }}>
+						タスクID: <code>{taskId}</code>
+					</p>
 				)}
 				{howa && (
 					<article className="howa-card">

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hiraoyogizzard-valkey
+  namespace: hiraoyogizzard
+  labels:
+    app: hiraoyogizzard-valkey
+spec:
+  selector:
+    app: hiraoyogizzard-valkey
+  ports:
+    - name: tcp-valkey
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP

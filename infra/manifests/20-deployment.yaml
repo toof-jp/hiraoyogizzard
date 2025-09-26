@@ -42,3 +42,11 @@ spec:
                 secretKeyRef:
                   name: hiraoyogizzard-backend-secrets
                   key: GEMINI_API_KEY
+            - name: VALKEY_HOST
+              value: hiraoyogizzard-valkey
+            - name: VALKEY_PORT
+              value: "6379"
+            - name: VALKEY_QUEUE_NAME
+              value: howa:tasks
+            - name: VALKEY_TASK_TTL_SECONDS
+              value: "3600"
