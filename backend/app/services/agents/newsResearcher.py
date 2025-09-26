@@ -16,7 +16,7 @@ class NewsResearcher:
                 google_search_retrieval=protos.GoogleSearchRetrieval()
             )
             self.model = genai.GenerativeModel(
-                'gemini-1.5-flash-latest',
+                'gemini-2.5-flash',
                 tools=[google_search_tool]
             )
             logger.info("YugyosoAgent initialized successfully.")

@@ -13,7 +13,7 @@ class QueryMaker:
         try:
             # このエージェントも思考するためにモデルを持つ
             #genai.configure(api_key=settings.gemini_api_key)
-            self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
+            self.model = genai.GenerativeModel('gemini-2.5-flash')
             logger.info("HobenAgent (Query Maker) initialized.")
         except Exception as e:
             logger.error(f"Failed to initialize HobenAgent: {e}")
