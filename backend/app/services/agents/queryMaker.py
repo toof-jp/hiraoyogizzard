@@ -1,5 +1,5 @@
 import logging
-import google.generativeai as genai
+from google import genai
 from ...core.config import settings
 from typing import Dict, Any, Optional, List
 
@@ -12,9 +12,7 @@ class QueryMaker:
 
     def __init__(self):
         try:
-            # このエージェントも思考するためにモデルを持つ
-            #genai.configure(api_key=settings.gemini_api_key)
-            self.model = genai.GenerativeModel('gemini-2.5-flash')
+            self.client = genai.Client(api_key=settings.google_api_key)
             logger.info("HobenAgent (Query Maker) initialized.")
         except Exception as e:
             logger.error(f"Failed to initialize HobenAgent: {e}")
@@ -31,7 +29,7 @@ class QueryMaker:
 # 抽出したテーマ:
 """
         try:
-            response = await self.model.generate_content_async(prompt)
+            response = await self.client.aio.models.generate_content(model='gemini-2.5-flash', contents=prompt)
             summarized_theme = response.text.strip()
             logger.info(f"Summarized theme: '{long_text}' -> '{summarized_theme}'")
             return summarized_theme

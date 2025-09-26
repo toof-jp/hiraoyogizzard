@@ -1,5 +1,5 @@
-import google.generativeai as genai
-from google.generativeai import protos
+from google import genai
+from ...core.config import settings
 from typing import List, Dict, Any, Optional
 import logging
 
@@ -10,17 +10,10 @@ class NewsResearcher:
 
     def __init__(self):
         try:
-            # Google検索ツールを持たせる
-            google_search_tool = protos.Tool(
-                google_search_retrieval=protos.GoogleSearchRetrieval()
-            )
-            self.model = genai.GenerativeModel(
-                'gemini-2.5-flash',
-                tools=[google_search_tool]
-            )
-            logger.info("YugyosoAgent initialized successfully.")
+            self.client = genai.Client(api_key=settings.google_api_key)
+            logger.info("NewsResearcher initialized successfully with Google Search.")
         except Exception as e:
-            logger.error(f"Failed to initialize YugyosoAgent: {e}")
+            logger.error(f"Failed to initialize NewsResearcher: {e}")
             raise
 
     async def search_current_topics(
@@ -48,14 +41,17 @@ class NewsResearcher:
             # 基本プロンプトに、このコンテキスト情報を組み込む
             final_prompt = f"{context_section}\n\n{base_prompt}"
 
-        logger.debug("YugyosoAgent received a search request. Final prompt:\n%s", final_prompt)
+        logger.debug("YugyusoAgent received a search request. Final prompt:\n%s", final_prompt)
         try:
-            response = await self.model.generate_content_async(final_prompt)
+            response = await self.client.aio.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=final_prompt
+            )
             
             # レスポンスを箇条書きのリストに分割
             topics = [line.strip().lstrip('- ').strip() for line in response.text.strip().split('\n') if line.strip()]
             
-            logger.info(f"YugyosoAgent found {len(topics)} topics.")
+            logger.info(f"YugyusoAgent found {len(topics)} topics.")
             return topics
         except Exception as e:
             logger.error(f"Error during topic search: {e}")

@@ -1,4 +1,4 @@
-import google.generativeai as genai
+from google import genai
 from ..core.config import settings
 from ..models.howa import GenerateHowaRequest, HowaResponse
 import json
@@ -11,11 +11,7 @@ class GeminiService:
 
     def __init__(self):
         try:
-            genai.configure(api_key=settings.gemini_api_key)
-            for m in genai.list_models():
-                print(m.name)
-            # モデル名を新しいものに変更
-            self.model = genai.GenerativeModel('gemini-2.5-flash')
+            self.client = genai.Client(api_key=settings.google_api_key)
             logger.info("Gemini Service initialized successfully.")
         except Exception as e:
             logger.error(f"Failed to initialize Gemini Service: {e}")
@@ -52,7 +48,10 @@ class GeminiService:
         """プロンプトを生成し、Gemini APIを呼び出して法話草稿を取得する"""
         prompt = self._create_prompt(request)
         try:
-            response = await self.model.generate_content_async(prompt)
+            response = await self.client.aio.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt
+            )
             
             # マークダウンの```json ... ```を削除
             cleaned_text = response.text.strip().replace("```json", "").replace("```", "").strip()
