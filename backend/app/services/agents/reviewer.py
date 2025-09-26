@@ -13,7 +13,7 @@ class Reviewer:
 
     def __init__(self):
         logger.info("Reviewer initialized with its own Gemini model instance.")
-        self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
 
     # --- ▼▼▼ 戻り値の型ヒントを Dict[str, Any] に変更 ▼▼▼ ---
     async def evaluate_and_select(self, theme: str, howa_candidates: List[str]) -> Dict[str, Any]:

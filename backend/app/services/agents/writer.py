@@ -13,7 +13,7 @@ class Writer:
     def __init__(self):
         try:
             # このエージェントは文章生成が目的なので、検索ツールは不要
-            self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
+            self.model = genai.GenerativeModel('gemini-2.5-flash')
             logger.info("SakkaAgent (Writer) initialized.")
         except Exception as e:
             logger.error(f"Failed to initialize SakkaAgent: {e}")
