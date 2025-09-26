@@ -7,6 +7,7 @@ on:
     paths:
       - backend/**
       - .github/workflows/backend-test-ci.yml
+  workflow_dispatch:
 
 permissions:
   contents: read
