@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hiraoyogizzard-backend
+  namespace: hiraoyogizzard
+  labels:
+    app: hiraoyogizzard-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hiraoyogizzard-backend
+  template:
+    metadata:
+      labels:
+        app: hiraoyogizzard-backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/toof-jp/hiraoyogizzard-backend:sha-9dad8d4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          env:
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hiraoyogizzard-backend-secrets
+                  key: GEMINI_API_KEY

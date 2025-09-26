@@ -20,6 +20,7 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://localhost:5173",
         "http://localhost:65086",
+        "https://hiraoyogizzard.pages.dev",
     ]
     
     # Gemini API Key
