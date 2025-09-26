@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: ghcr.io/toof-jp/hiraoyogizzard-backend:sha-7dc944d
+          image: ghcr.io/toof-jp/hiraoyogizzard-backend:sha-675ea76
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
@@ -57,3 +57,13 @@ spec:
                 secretKeyRef:
                   name: hiraoyogizzard-backend-secrets
                   key: VERTEX_AI_DATA_STORE_ID
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/google/my-sa-key.json
+          volumeMounts:
+            - name: backend-sa-key
+              mountPath: /var/secrets/google
+              readOnly: true
+      volumes:
+        - name: backend-sa-key
+          secret:
+            secretName: hiraoyogizzard-backend-sa
