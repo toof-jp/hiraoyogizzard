@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     ]
     
     # Gemini API Key
-    gemini_api_key: str
+    google_api_key: str
 
     # Vertex AI Search
     vertex_ai_project_id: str

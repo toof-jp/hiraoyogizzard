@@ -1,4 +1,5 @@
-import google.generativeai as genai
+from google import genai
+from ...core.config import settings
 import logging
 from typing import List, Dict, Any
 
@@ -12,8 +13,7 @@ class Writer:
 
     def __init__(self):
         try:
-            # このエージェントは文章生成が目的なので、検索ツールは不要
-            self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
+            self.client = genai.Client(api_key=settings.google_api_key)
             logger.info("SakkaAgent (Writer) initialized.")
         except Exception as e:
             logger.error(f"Failed to initialize SakkaAgent: {e}")
@@ -64,7 +64,7 @@ class Writer:
 
         logger.info("Generating final howa text...")
         try:
-            response = await self.model.generate_content_async(prompt)
+            response = await self.client.aio.models.generate_content(model='gemini-2.5-flash', contents=prompt)
             final_text = response.text.strip()
             logger.info("Successfully generated final howa text.")
             #print(final_text)  # デバッグ用に生成された法話を出力

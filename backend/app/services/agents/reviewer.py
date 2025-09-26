@@ -2,7 +2,8 @@ import logging
 import re
 import json
 from typing import List, Dict, Any
-import google.generativeai as genai
+from google import genai
+from ...core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ class Reviewer:
 
     def __init__(self):
         logger.info("Reviewer initialized with its own Gemini model instance.")
-        self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        self.client = genai.Client(api_key=settings.google_api_key)
 
     # --- ▼▼▼ 戻り値の型ヒントを Dict[str, Any] に変更 ▼▼▼ ---
     async def evaluate_and_select(self, theme: str, howa_candidates: List[str]) -> Dict[str, Any]:
@@ -34,7 +35,7 @@ class Reviewer:
         prompt = self._create_evaluation_prompt(theme, howa_candidates)
 
         try:
-            response = await self.model.generate_content_async(prompt)
+            response = await self.client.aio.models.generate_content(model='gemini-2.5-flash', contents=prompt)
             response_text = response.text
             
             json_match = re.search(r'```json\n({.*?})\n```', response_text, re.DOTALL)
