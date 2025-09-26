@@ -100,11 +100,17 @@ class HowaGenerationService:
         logger.debug(f"Executing step: '{step}'")
 
         if step == "create_prompts":
-            news_search_prompt = await self.query_maker.create_current_topics_search_prompt(theme, audiences)
-            return {"news_search_prompt": news_search_prompt}
+            news_search_task = await self.query_maker.create_current_topics_search_prompt(theme, audiences)
+            sutra_search_task = await self.query_maker.create_sutra_search_prompt(theme, audiences)
+            news_search_prompt, sutra_search_prompt = await asyncio.gather(
+                news_search_task, 
+                sutra_search_task
+            )
+            return {"news_search_prompt": news_search_prompt,
+                    "sutra_search_prompt": sutra_search_prompt}
 
         elif step == "run_sutra_search":
-            search_request = KyotenSearchRequest(theme=theme)
+            search_request = KyotenSearchRequest(theme=context.get("sutra_search_prompt", ""))
             response = await self.kyoten_finder.search_sutra_placeholder(search_request)
             return {"found_quote": {
                 "quote": response.sutra_text,

@@ -40,7 +40,7 @@ class QueryMaker:
             # エラー時は元のテキストの先頭部分を安全に使う
             return long_text[:50]
 
-    async def create_sutra_search_prompt(self, theme_input: str) -> str:
+    async def create_sutra_search_prompt(self, theme_input: str, audiences: List[str]) -> str:
         """
         与えられたテーマに基づき、蔵主エージェントが仏教原典を検索するための
         詳細なプロンプトを生成する。
@@ -54,12 +54,12 @@ class QueryMaker:
 
         # 要約・抽出されたクリーンなテーマを使ってプロンプトを生成
         prompt = f"""
-あなたは、三蔵に精通した仏教学者（蔵主）です。
-以下のテーマに最も合致する仏教の経典（パーリ語仏典、漢訳仏典など）から、象徴的な一節を探し出し、提示してください。
 
 # 検索テーマ
 {core_theme}
 
+# 対象聴衆
+{"、".join(audiences) if audiences else "一般の人々"}
 # 指示
 1.  テーマに最も関連深く、心に響く一節を選んでください。
 2.  長すぎる場合は、最も重要な部分（200字以内）を抜粋してください。
