@@ -3,7 +3,7 @@ name: Build & Push Test Image
 on:
   push:
     branches:
-      - test/*
+      - 'test/*'
     paths:
       - backend/**
       - .github/workflows/backend-test-ci.yml
