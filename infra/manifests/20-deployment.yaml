@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: ghcr.io/toof-jp/hiraoyogizzard-backend:sha-9dad8d4
+          image: ghcr.io/toof-jp/hiraoyogizzard-backend:sha-7dc944d
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000

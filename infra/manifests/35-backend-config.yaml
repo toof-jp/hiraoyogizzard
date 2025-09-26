@@ -1,0 +1,7 @@
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: hiraoyogizzard-backend-config
+  namespace: hiraoyogizzard
+spec:
+  timeoutSec: 600
