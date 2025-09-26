@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     
     # Gemini API Key
     gemini_api_key: str
+
+    # Vertex AI Search
+    vertex_ai_project_id: str
+    vertex_ai_location: str
+    vertex_ai_data_store_id: str
     
     # データベース設定（将来使用）
     database_url: Optional[str] = None

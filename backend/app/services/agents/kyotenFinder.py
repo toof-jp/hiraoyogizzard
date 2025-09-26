@@ -1,126 +1,187 @@
-import logging
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field
+import asyncio
+import json
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
 
-logger = logging.getLogger(__name__)
+from google.cloud import discoveryengine_v1 as discoveryengine
+from google.protobuf.json_format import MessageToDict
 
-
-class KyotenSearchRequest(BaseModel):
-    """経典検索リクエスト"""
-    theme: str = Field(..., min_length=1, description="検索テーマ", example="慈悲")
-    context: Optional[str] = Field(None, description="追加のコンテキスト情報")
+from app.core.config import settings
 
 
-class KyotenSearchResponse(BaseModel):
-    """経典検索レスポンス"""
-    sutra_text: str = Field(..., description="経典の引用文")
-    source: str = Field(..., description="出典情報")
-    context: str = Field(..., description="経典の背景・解釈")
-    related_themes: List[str] = Field(default=[], description="関連するテーマ")
+@dataclass
+class KyotenSearchRequest:
+    theme: str
+
+
+@dataclass
+class KyotenSearchResponse:
+    sutra_text: str
+    source: str
+    context: str
+    related_themes: List[str] = field(default_factory=list)
 
 
 class KyotenFinder:
-    """
-    蔵主エージェント - 経典情報の管理と提供を担当
+    """Vertex AI Search を使って拠点情報を検索するクラス"""
 
-    将来のVertex AI統合に向けた準備実装
-    現在は基本的な構造とインターフェースのみを提供
-    """
+    def __init__(self) -> None:
+        self.project_id = settings.vertex_ai_project_id
+        self.location = settings.vertex_ai_location
+        self.data_store_id = settings.vertex_ai_data_store_id
 
-    def __init__(self):
-        """
-        蔵主エージェントの初期化
+    def search(self, search_query: str) -> KyotenSearchResponse:
+        """データストアを検索し、KyotenSearchResponse形式で返す"""
 
-        注意: Vertex AI クライアントの初期化は将来実装予定
-        現在はプレースホルダーとして基本構造のみ構築
-        """
-        self.is_vertex_ai_ready = False
-        logger.info("KyotenFinder initialized (preparation mode)")
+        client = discoveryengine.SearchServiceClient()
+        serving_config = client.serving_config_path(
+            project=self.project_id,
+            location=self.location,
+            data_store=self.data_store_id,
+            serving_config="default_config",
+        )
 
-    def _prepare_vertex_ai_client(self):
-        """
-        Vertex AI クライアントの準備
+        request = discoveryengine.SearchRequest(
+            serving_config=serving_config,
+            query=search_query,
+            page_size=10,
+        )
 
-        将来の実装予定:
-        - google-cloud-aiplatform ライブラリの初期化
-        - 認証設定
-        - プロジェクト設定
-
-        現在は準備段階のためスタブ実装
-        """
-        # TODO: Vertex AI の準備が完了次第、以下を実装
-        # import vertexai
-        # vertexai.init(project="your-project-id", location="your-location")
-
-        logger.info("Vertex AI client preparation placeholder")
-        return False
+        response = client.search(request)
+        parsed = self._parse_search_response(response, search_query)
+        return parsed or self._build_fallback_response(search_query)
 
     async def search_sutra_placeholder(self, request: KyotenSearchRequest) -> KyotenSearchResponse:
-        """
-        経典検索機能のプレースホルダー
+        """スタンドアロン動作用のダミー検索。検索テーマを受け取り固定レスポンスを返す"""
 
-        将来の実装予定:
-        - Vertex AI を使用した経典データベース検索
-        - テーマに基づく適切な経典の選択
-        - コンテキストに応じた解釈提供
+        await asyncio.sleep(0)
+        return self._build_fallback_response(request.theme)
 
-        Args:
-            request: 検索リクエスト
+    def _parse_search_response(
+        self,
+        response: discoveryengine.SearchResponse,
+        search_query: str,
+    ) -> Optional[KyotenSearchResponse]:
+        for result in getattr(response, "results", []):
+            document = getattr(result, "document", None)
+            if not document:
+                continue
 
-        Returns:
-            KyotenSearchResponse: 経典情報（現在はサンプルデータ）
-        """
-        logger.info(f"経典検索リクエスト（準備段階）: テーマ={request.theme}")
+            payload = self._document_to_payload(document)
+            if not payload:
+                continue
 
-        # プレースホルダーとしてサンプルデータを返す
-        sample_response = KyotenSearchResponse(
+            return self._build_response_from_payload(payload, search_query)
+        return None
+
+    def _document_to_payload(self, document: discoveryengine.Document) -> Dict[str, Any]:
+        for attr in ("struct_data", "derived_struct_data"):
+            payload = self._struct_to_dict(getattr(document, attr, None))
+            if payload:
+                return payload
+
+        json_data = getattr(document, "json_data", None)
+        if json_data:
+            try:
+                parsed = json.loads(json_data)
+            except json.JSONDecodeError:
+                return {}
+            if isinstance(parsed, dict):
+                return parsed
+
+        return {}
+
+    def _struct_to_dict(self, struct_obj: Any) -> Dict[str, Any]:
+        if struct_obj is None:
+            return {}
+
+        if isinstance(struct_obj, dict):
+            return struct_obj
+
+        try:
+            return MessageToDict(struct_obj, preserving_proto_field_name=True)
+        except TypeError:
+            try:
+                return dict(struct_obj)
+            except TypeError:
+                return {}
+
+    def _build_response_from_payload(
+        self,
+        payload: Dict[str, Any],
+        search_query: str,
+    ) -> KyotenSearchResponse:
+        sutra_text = self._extract_text(
+            payload,
+            ["sutra_text", "sutraText", "quote", "title"],
+            search_query,
+        )
+        source = self._extract_text(
+            payload,
+            ["source", "sutra_source", "sutraSource", "book"],
+            "",
+        )
+        context = self._extract_text(
+            payload,
+            ["context", "summary", "explanation", "description"],
+            "",
+        )
+        related = (
+            payload.get("related_themes")
+            or payload.get("relatedThemes")
+            or payload.get("themes")
+            or payload.get("keywords")
+        )
+        related_themes = self._normalize_related_themes(related)
+
+        return KyotenSearchResponse(
+            sutra_text=sutra_text,
+            source=source,
+            context=context,
+            related_themes=related_themes,
+        )
+
+    def _extract_text(self, payload: Dict[str, Any], keys: List[str], default_value: str) -> str:
+        for key in keys:
+            value = payload.get(key)
+            if isinstance(value, str):
+                stripped = value.strip()
+                if stripped:
+                    return stripped
+            elif isinstance(value, list):
+                items = [str(item).strip() for item in value if str(item).strip()]
+                if items:
+                    return " / ".join(items)
+            elif value is not None:
+                result = str(value).strip()
+                if result:
+                    return result
+        return default_value
+
+    def _normalize_related_themes(self, value: Any) -> List[str]:
+        if isinstance(value, list):
+            return [str(item).strip() for item in value if str(item).strip()]
+
+        if isinstance(value, str):
+            separators = [",", "、", "，", ";", "|", "/"]
+            for sep in separators:
+                if sep in value:
+                    parts = value.split(sep)
+                    break
+            else:
+                parts = [value]
+            return [part.strip() for part in parts if part.strip()]
+
+        if value is None:
+            return []
+
+        stringified = str(value).strip()
+        return [stringified] if stringified else []
+
+    def _build_fallback_response(self, search_query: Optional[str] = None) -> KyotenSearchResponse:
+        return KyotenSearchResponse(
             sutra_text="一切衆生悉有仏性（いっさいしゅじょうしつうぶっしょう）",
             source="涅槃経",
             context="すべての生きとし生けるものには、等しく仏となる可能性（仏性）が備わっているという教え",
-            related_themes=["慈悲", "平等", "覚醒"]
+            related_themes=["慈悲", "平等", "覚醒"],
         )
-
-        logger.info("経典検索完了（サンプルデータ）")
-        return sample_response
-
-    def _prepare_agent_interface(self) -> Dict[str, Any]:
-        """
-        他エージェントとの連携インターフェース準備
-
-        将来の実装予定:
-        - 遊行僧エージェントへの経典コンテキスト提供
-        - 作家エージェントへの古典引用情報提供
-
-        現在は連携準備のためのスタブ
-        """
-        interface_config = {
-            "yugyoso_agent_ready": False,  # 遊行僧エージェント連携準備
-            "writer_agent_ready": False,   # 作家エージェント連携準備
-            "data_format": "KyotenSearchResponse"
-        }
-
-        logger.info("エージェント連携インターフェース準備完了")
-        return interface_config
-
-    def get_service_status(self) -> Dict[str, Any]:
-        """
-        サービスの現在状態を取得
-
-        Returns:
-            Dict: サービス状態情報
-        """
-        return {
-            "service_name": "蔵主エージェント（KyotenFinder）",
-            "status": "準備段階",
-            "vertex_ai_ready": self.is_vertex_ai_ready,
-            "available_functions": [
-                "search_sutra_placeholder",
-                "_prepare_agent_interface",
-                "get_service_status"
-            ],
-            "pending_implementations": [
-                "Vertex AI クライアント統合",
-                "実際の経典データベース接続",
-                "他エージェントとの実連携"
-            ]
-        }
