@@ -68,9 +68,6 @@ class HowaGenerationService:
         # 4. 法話執筆
         write_result = await self.execute_step("write_howa", theme, audiences, context)
         context["howa_candidates"] = write_result["final_howa"] # キー名を評価ステップ用に変更
-
-        # 5. 法話評価
-        eval_result = await self.execute_step("evaluate_howa", theme, audiences, context)
         
         # 最終的なレスポンスを組み立てる
         # evaluate_and_selectは、パース済みの辞書(dict)を返す
@@ -101,11 +98,22 @@ class HowaGenerationService:
 
         if step == "create_prompts":
             news_search_prompt = await self.query_maker.create_current_topics_search_prompt(theme, audiences)
-            return {"news_search_prompt": news_search_prompt}
+            sutra_search_prompt = await self.query_maker.create_sutra_search_prompt(theme, audiences)
+            return {"news_search_prompt": news_search_prompt, "sutra_search_prompt": sutra_search_prompt}
 
         elif step == "run_sutra_search":
-            search_request = KyotenSearchRequest(theme=theme)
-            response = await self.kyoten_finder.search_sutra_placeholder(search_request)
+            search_prompt = context.get("sutra_search_prompt") or theme
+            if not search_prompt:
+                raise ValueError("Context must contain 'sutra_search_prompt'.")
+
+            search_request = KyotenSearchRequest(theme=search_prompt)
+
+            try:
+                # Vertex AI Search の同期クライアントはブロッキングなので別スレッドで実行
+                response = await asyncio.to_thread(self.kyoten_finder.search, search_request.theme)
+            except Exception as e:
+                logger.error(f"Failed to execute Vertex AI search: {e}. Falling back to placeholder response.")
+                response = await self.kyoten_finder.search_sutra_placeholder(search_request)
             return {"found_quote": {
                 "quote": response.sutra_text,
                 "source": response.source,

@@ -3,6 +3,8 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from google.protobuf.struct_pb2 import ListValue, Struct, Value
+
 from google.cloud import discoveryengine_v1 as discoveryengine
 from google.protobuf.json_format import MessageToDict
 
@@ -98,13 +100,52 @@ class KyotenFinder:
         if isinstance(struct_obj, dict):
             return struct_obj
 
+        # Struct / MapComposite など辞書ライクなオブジェクトを安全にPythonのdictへ変換する
+        if hasattr(struct_obj, "items"):
+            try:
+                return {key: self._convert_struct_value(value) for key, value in struct_obj.items()}
+            except Exception:
+                pass
+
         try:
             return MessageToDict(struct_obj, preserving_proto_field_name=True)
-        except TypeError:
-            try:
-                return dict(struct_obj)
-            except TypeError:
-                return {}
+        except (TypeError, AttributeError):
+            pass
+
+        try:
+            return dict(struct_obj)
+        except (TypeError, ValueError):
+            return {}
+
+    def _convert_struct_value(self, value: Any) -> Any:
+        if isinstance(value, dict):
+            return {key: self._convert_struct_value(val) for key, val in value.items()}
+
+        if isinstance(value, list):
+            return [self._convert_struct_value(item) for item in value]
+
+        if isinstance(value, Struct):
+            return self._struct_to_dict(value)
+
+        if isinstance(value, ListValue):
+            return [self._convert_struct_value(item) for item in value.values]
+
+        if isinstance(value, Value):
+            kind = value.WhichOneof("kind")
+            if kind == "struct_value":
+                return self._struct_to_dict(value.struct_value)
+            if kind == "list_value":
+                return [self._convert_struct_value(item) for item in value.list_value.values]
+            if kind == "string_value":
+                return value.string_value
+            if kind == "number_value":
+                return value.number_value
+            if kind == "bool_value":
+                return value.bool_value
+            if kind == "null_value":
+                return None
+
+        return value
 
     def _build_response_from_payload(
         self,
