@@ -102,9 +102,18 @@ class HowaGenerationService:
             return {"news_search_prompt": news_search_prompt, "sutra_search_prompt": sutra_search_prompt}
 
         elif step == "run_sutra_search":
-            search_request = KyotenSearchRequest(theme=context.get("sutra_search_prompt", ""))
-            #response = await self.kyoten_finder.search_sutra_placeholder(search_request)
-            response = await self.kyoten_finder.search(search_request)
+            search_prompt = context.get("sutra_search_prompt") or theme
+            if not search_prompt:
+                raise ValueError("Context must contain 'sutra_search_prompt'.")
+
+            search_request = KyotenSearchRequest(theme=search_prompt)
+
+            try:
+                # Vertex AI Search の同期クライアントはブロッキングなので別スレッドで実行
+                response = await asyncio.to_thread(self.kyoten_finder.search, search_request.theme)
+            except Exception as e:
+                logger.error(f"Failed to execute Vertex AI search: {e}. Falling back to placeholder response.")
+                response = await self.kyoten_finder.search_sutra_placeholder(search_request)
             return {"found_quote": {
                 "quote": response.sutra_text,
                 "source": response.source,
